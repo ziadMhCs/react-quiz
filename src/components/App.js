@@ -1,4 +1,4 @@
-// build question , option components + option selecting mechanism 
+// add next question + progress bar 
 import Main from "./Main";
 import Header from "./Header";
 import Loader from "./Loader"
@@ -6,6 +6,8 @@ import Error from "./Error"
 import Question from "./Question";
 import { useEffect, useReducer } from "react";
 import StartScreen from "./StartScreen";
+import NextButton from "./NextButton"
+import Progress from "./Progress";
 
 const initialState = {
   questions:[], 
@@ -31,14 +33,17 @@ function reducer(state, action){
               // points: action.payload===question.correctOption?"T":"f" 
   
             } 
+            case "nextQuestion":
+              return{...state,answer:null, index:state.index+1}
   
   default:
 throw new Error("Action Unknown")}
 
 }
 export default function App() {
-const[{questions,status,index,answer},dispatch] = useReducer(reducer , initialState)
+const[{questions,status,index,answer,points},dispatch] = useReducer(reducer , initialState)
 const numbQuestions = questions.length;
+const maxPossiblePoints = questions.reduce((prev,next)=> prev+next.points,0)
 // useEffect(()=>console.log(state),[state]);
 
   useEffect(   function(){
@@ -53,6 +58,13 @@ const numbQuestions = questions.length;
   return (
     <div className="app">
       <Header />
+      <Progress
+      index={index}
+      numbQuestions={numbQuestions}
+      points={points}
+      maxPossiblePoints={maxPossiblePoints}
+      answer={answer}
+      />
       <Main>
       {status==="isLoading"&& <Loader/>}
       {status==="error"&& <Error/>}
@@ -60,6 +72,7 @@ const numbQuestions = questions.length;
       {status==="active"&& <Question dispatch={dispatch} answer={answer} question={questions.at(index)} />}
 
 
+      <NextButton dispatch={dispatch} answer={answer}/>
       </Main>
     </div>
   );
