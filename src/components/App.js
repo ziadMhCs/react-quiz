@@ -1,4 +1,4 @@
-// add next question + progress bar 
+// implement finishing a  quiz
 import Main from "./Main";
 import Header from "./Header";
 import Loader from "./Loader"
@@ -8,13 +8,15 @@ import { useEffect, useReducer } from "react";
 import StartScreen from "./StartScreen";
 import NextButton from "./NextButton"
 import Progress from "./Progress";
+import FinishScreen from "./FinishScreen";
 
 const initialState = {
   questions:[], 
   status:"loading",
   index:0, // tracks the question to be displayed
   answer: null,
-  points:0
+  points:0,
+  highScore:0
 };
 function reducer(state, action){
   switch (action.type) {
@@ -35,13 +37,18 @@ function reducer(state, action){
             } 
             case "nextQuestion":
               return{...state,answer:null, index:state.index+1}
+              
+            case "finish":
+              return{...state,status:"finished",
+                highScore: state.points > state.highScore?state.points:state.highScore
+              }
   
   default:
 throw new Error("Action Unknown")}
 
 }
 export default function App() {
-const[{questions,status,index,answer,points},dispatch] = useReducer(reducer , initialState)
+const[{questions,status,index,answer,points,highScore},dispatch] = useReducer(reducer , initialState)
 const numbQuestions = questions.length;
 const maxPossiblePoints = questions.reduce((prev,next)=> prev+next.points,0)
 // useEffect(()=>console.log(state),[state]);
@@ -58,6 +65,12 @@ const maxPossiblePoints = questions.reduce((prev,next)=> prev+next.points,0)
   return (
     <div className="app">
       <Header />
+      <Main>
+      {status==="isLoading"&& <Loader/>}
+      {status==="error"&& <Error/>}
+      {status==="ready"&& <StartScreen dispatch={dispatch} numbQuestions={numbQuestions}/>}
+      {status==="active"&& 
+      <>
       <Progress
       index={index}
       numbQuestions={numbQuestions}
@@ -65,14 +78,17 @@ const maxPossiblePoints = questions.reduce((prev,next)=> prev+next.points,0)
       maxPossiblePoints={maxPossiblePoints}
       answer={answer}
       />
-      <Main>
-      {status==="isLoading"&& <Loader/>}
-      {status==="error"&& <Error/>}
-      {status==="ready"&& <StartScreen dispatch={dispatch} numbQuestions={numbQuestions}/>}
-      {status==="active"&& <Question dispatch={dispatch} answer={answer} question={questions.at(index)} />}
+      <Question dispatch={dispatch} answer={answer} question={questions.at(index)} />
+      
+      <NextButton dispatch={dispatch} answer={answer} numQuestions={numbQuestions} index={index}/>
+      </>
+      }
 
 
-      <NextButton dispatch={dispatch} answer={answer}/>
+
+
+      {status==="finished" &&  <FinishScreen maxPossiblePoints={maxPossiblePoints}
+                                                points={points} highScore={highScore}/>} 
       </Main>
     </div>
   );
