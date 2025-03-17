@@ -1,4 +1,4 @@
-// implement finishing a  quiz
+// implement restart quiz
 import Main from "./Main";
 import Header from "./Header";
 import Loader from "./Loader"
@@ -38,10 +38,17 @@ function reducer(state, action){
             case "nextQuestion":
               return{...state,answer:null, index:state.index+1}
               
-            case "finish":
-              return{...state,status:"finished",
-                highScore: state.points > state.highScore?state.points:state.highScore
-              }
+              case "finish":
+                return{...state,status:"finished",
+                  highScore: state.points > state.highScore?state.points:state.highScore
+                }
+
+
+                case "restart":
+                  return{...state,status:"ready", index:0,  answer: null,
+                    points:0,
+
+                  }
   
   default:
 throw new Error("Action Unknown")}
@@ -80,7 +87,7 @@ const maxPossiblePoints = questions.reduce((prev,next)=> prev+next.points,0)
       />
       <Question dispatch={dispatch} answer={answer} question={questions.at(index)} />
       
-      <NextButton dispatch={dispatch} answer={answer} numQuestions={numbQuestions} index={index}/>
+      <NextButton dispatch={dispatch} status={status} answer={answer} numQuestions={numbQuestions} index={index}/>
       </>
       }
 
@@ -88,7 +95,7 @@ const maxPossiblePoints = questions.reduce((prev,next)=> prev+next.points,0)
 
 
       {status==="finished" &&  <FinishScreen maxPossiblePoints={maxPossiblePoints}
-                                                points={points} highScore={highScore}/>} 
+                                 dispatch={dispatch}               points={points} highScore={highScore}/>} 
       </Main>
     </div>
   );
